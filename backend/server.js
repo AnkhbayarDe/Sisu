@@ -160,7 +160,7 @@ app.post("/logout", (req, res) => {
   res.json({ message: "Logged out successfully" });
 });
 
-// Upload file
+// Upload file with image/video validation
 app.post("/upload", authMiddleware, upload.single("file"), async (req, res) => {
   try {
     // Get location data from request body
@@ -168,6 +168,27 @@ app.post("/upload", authMiddleware, upload.single("file"), async (req, res) => {
     
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
+    }
+    
+    // Define accepted file types
+    const ACCEPTED_IMAGE_TYPES = [
+      "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp", 
+      "image/svg+xml", "image/tiff", "image/heic", "image/heif"
+    ];
+
+    const ACCEPTED_VIDEO_TYPES = [
+      "video/mp4", "video/webm", "video/ogg", "video/quicktime", "video/x-msvideo",
+      "video/x-matroska", "video/mpeg", "video/3gpp", "video/x-ms-wmv", "video/x-flv"
+    ];
+
+    const ACCEPTED_TYPES = [...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_VIDEO_TYPES];
+    
+    // Validate file type server-side
+    if (!ACCEPTED_TYPES.includes(req.file.mimetype)) {
+      return res.status(400).json({ 
+        message: "Invalid file type. Only images and videos are allowed.",
+        error: "invalid_file_type"
+      });
     }
     
     // Create new file record
