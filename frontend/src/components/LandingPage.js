@@ -11,11 +11,17 @@ function LandingPage() {
     <div style={{ ...styles.container, ...themeStyles.container }}>
       {/* Dark Mode toggle товч */}
       <div style={{ textAlign: "right", marginBottom: "1rem" }}>
-        <button onClick={toggleMode} style={styles.toggleButton}>
-          {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
+        <button
+            onClick={toggleMode}
+            style={{
+            ...styles.toggleButton,
+            color: darkMode ? "#fff" : "#333", // Dark mode → цагаан, Light mode → хар
+            borderColor: darkMode ? "#ccc" : "#555",
+            }}  
+        >
+            {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
         </button>
-      </div>
-
+</div>
       {/* Үндсэн контент */}
       <div style={styles.topSection}>
         <div style={styles.textContainer}>
@@ -30,7 +36,7 @@ function LandingPage() {
         </div>
         <div style={styles.imageContainer}>
           <img
-            src="/ganbat.jpg"
+            src="/banner.jpg"
             alt="Safety example"
             style={styles.image}
           />
@@ -95,12 +101,15 @@ const styles = {
   },
   toggleButton: {
     padding: "0.4rem 0.8rem",
-    border: "1px solid #555",
+    border: "1px solid",
     borderRadius: "6px",
     cursor: "pointer",
     fontSize: "0.9rem",
     background: "transparent",
+    fontWeight: "bold",
+    transition: "color 0.3s, border-color 0.3s",
   },
+  
   light: {
     container: { background: "#f9fafc", color: "#333" },
     title: { color: "#2c3e50" },
@@ -113,6 +122,7 @@ const styles = {
     description: { color: "#ccc" },
     mapTitle: { color: "#f0f0f0" },
   },
+  
 };
 
 export default LandingPage;

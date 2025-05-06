@@ -1,10 +1,16 @@
 import React from "react";
 
+const demoImages = [
+  { src: "/demo1.jpg", alt: "Зураг 1" },
+  { src: "/demo2.jpg", alt: "Зураг 2" },
+  { src: "/demo3.jpg", alt: "Зураг 3" },
+];
+
 const FeatureCard = ({ icon, title, description, darkMode }) => (
-  <div style={{ 
-    ...styles.card, 
-    background: darkMode ? "#2a2a2a" : "#fff", 
-    color: darkMode ? "#f0f0f0" : "#333" 
+  <div style={{
+    ...styles.card,
+    background: darkMode ? "#2a2a2a" : "#fff",
+    color: darkMode ? "#f0f0f0" : "#333",
   }}>
     <div style={styles.icon}>{icon}</div>
     <h3>{title}</h3>
@@ -14,51 +20,46 @@ const FeatureCard = ({ icon, title, description, darkMode }) => (
 
 const LandingPageExtras = ({ darkMode }) => {
   const theme = darkMode ? styles.dark : styles.light;
+  const icons = darkMode ? ["📷", "🧿", "🌌", "⚡"] : ["📸", "🔴", "🌍", "✅"];
 
   return (
     <div style={{ ...styles.extrasContainer, background: theme.background, color: theme.color }}>
       <h2 style={styles.sectionTitle}>Манай системийн онцлох боломжууд</h2>
       <div style={styles.cardContainer}>
         <FeatureCard
-          icon="📸"
+          icon={icons[0]}
           title="Зураг, бичлэг илгээх"
           description="Тулгарсан асуудлаа зураг, бичлэгээр илгээх."
           darkMode={darkMode}
         />
         <FeatureCard
-          icon="🔴"
+          icon={icons[1]}
           title="Шууд дамжуулалт"
           description="Онцгой байдлыг live дамжуулах."
           darkMode={darkMode}
         />
         <FeatureCard
-          icon="🌍"
+          icon={icons[2]}
           title="Газрын зураг тэмдэглэгээ"
           description="Аюултай газрыг газрын зураг дээр тэмдэглэх."
           darkMode={darkMode}
         />
         <FeatureCard
-          icon="✅"
+          icon={icons[3]}
           title="Хуурамч мэдээлэл шалгах"
           description="Fact-check хийж баталгаажуулах."
           darkMode={darkMode}
         />
       </div>
 
-      <h2 style={styles.sectionTitle}>ллр зургууд</h2>
-      <div style={styles.imageSlider}>
-        <div style={styles.demoItem}>
-          <img src="/ganbat1.jpg" alt="Demo 1" style={styles.demoImage} />
-          <p>Demo 1</p>
-        </div>
-        <div style={styles.demoItem}>
-          <img src="/ganbat2.jpg" alt="Demo 2" style={styles.demoImage} />
-          <p>Demo 2</p>
-        </div>
-        <div style={styles.demoItem}>
-          <img src="/ganbat3.jpg" alt="Demo 3" style={styles.demoImage} />
-          <p>Demo 3</p>
-        </div>
+      <h2 style={styles.sectionTitle}>Зурагнууд</h2>
+      <div style={styles.imageGrid}>
+        {demoImages.map((image, index) => (
+          <div key={index} style={styles.demoItem}>
+            <img src={image.src} alt={image.alt} style={styles.demoImage} />
+            <p>{image.alt}</p>
+          </div>
+        ))}
       </div>
 
       <footer style={{ ...styles.footer, color: theme.color }}>
@@ -97,22 +98,23 @@ const styles = {
     fontSize: "2.5rem",
     marginBottom: "0.5rem",
   },
-  imageSlider: {
+  imageGrid: {
     display: "flex",
     justifyContent: "center",
     gap: "1rem",
-    marginBottom: "2rem",
     flexWrap: "wrap",
+    marginBottom: "2rem",
   },
   demoItem: {
     textAlign: "center",
   },
   demoImage: {
-    width: "200px",
-    height: "120px",
+    width: "300px",
+    height: "180px",
     borderRadius: "8px",
     objectFit: "cover",
     boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+    marginBottom: "0.5rem",
   },
   footer: {
     marginTop: "2rem",
