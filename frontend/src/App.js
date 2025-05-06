@@ -3,6 +3,8 @@ import { Routes, Route, Navigate, Link, useLocation } from "react-router-dom";
 import Signup from "./components/Signup";
 import Login from "./components/Login";
 import Upload from "./components/Upload";
+import LandingPage from "./components/LandingPage";
+
 import "./App.css";
 
 import axios from "axios";
@@ -53,6 +55,9 @@ function App() {
               <Link to="/upload" style={styles.link}>
                 Файл оруулах
               </Link>
+              <Link to="/" style={styles.link}>
+              Home
+              </Link>
               <button onClick={logout} style={styles.button}>
                 Гарах
               </button>
@@ -75,6 +80,7 @@ function App() {
       </nav>
 
       <Routes>
+      <Route path="/" element={<LandingPage />} />
         <Route
           path="/signup"
           element={
