@@ -94,11 +94,20 @@ app.post("/logout", (req, res) => {
 
 // Upload file
 app.post("/upload", authMiddleware, upload.single("file"), async (req, res) => {
+  const { lat, lng } = req.body;
+
   const file = new FileModel({
     filename: req.file.originalname,
     contentType: req.file.mimetype,
     data: req.file.buffer,
+    userId: req.userId,
+    location: {
+      lat: parseFloat(lat),
+      lng: parseFloat(lng),
+    },
+    uploadedAt: new Date(),
   });
+
   await file.save();
   res.json({ message: "File uploaded" });
 });

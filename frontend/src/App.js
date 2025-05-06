@@ -6,6 +6,7 @@ import Upload from "./components/Upload";
 import LandingPage from "./components/LandingPage";
 
 import "./App.css";
+import "leaflet/dist/leaflet.css";
 
 import axios from "axios";
 axios.defaults.withCredentials = true;
