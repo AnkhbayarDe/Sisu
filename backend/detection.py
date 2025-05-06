@@ -1,1 +1,0 @@
-print("hi! do you see any fire?")
