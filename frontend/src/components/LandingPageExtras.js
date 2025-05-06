@@ -1,17 +1,30 @@
 import React from "react";
-
+import { useNavigate } from "react-router-dom";
 const demoImages = [
   { src: "/demo1.jpg", alt: "Зураг 1" },
   { src: "/demo2.jpg", alt: "Зураг 2" },
   { src: "/demo3.jpg", alt: "Зураг 3" },
 ];
 
-const FeatureCard = ({ icon, title, description, darkMode }) => (
-  <div style={{
-    ...styles.card,
-    background: darkMode ? "#2a2a2a" : "#fff",
-    color: darkMode ? "#f0f0f0" : "#333",
-  }}>
+const FeatureCard = ({ icon, title, description, darkMode, onClick }) => (
+  <div
+    style={{
+      ...styles.card,
+      background: darkMode ? "#2a2a2a" : "#fff",
+      color: darkMode ? "#f0f0f0" : "#333",
+      cursor: onClick ? "pointer" : "default",
+      transition: "transform 0.3s, box-shadow 0.3s",
+    }}
+    onClick={onClick}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.transform = "scale(1.05)";
+      e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.2)";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.transform = "scale(1)";
+      e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+    }}
+  >
     <div style={styles.icon}>{icon}</div>
     <h3>{title}</h3>
     <p>{description}</p>
@@ -19,6 +32,7 @@ const FeatureCard = ({ icon, title, description, darkMode }) => (
 );
 
 const LandingPageExtras = ({ darkMode }) => {
+  const navigate = useNavigate();
   const theme = darkMode ? styles.dark : styles.light;
   const icons = darkMode ? ["📷", "🧿", "🌌", "⚡"] : ["📸", "🔴", "🌍", "✅"];
 
@@ -31,6 +45,7 @@ const LandingPageExtras = ({ darkMode }) => {
           title="Зураг, бичлэг илгээх"
           description="Тулгарсан асуудлаа зураг, бичлэгээр илгээх."
           darkMode={darkMode}
+          onClick={() => navigate("/upload")}
         />
         <FeatureCard
           icon={icons[1]}
@@ -92,7 +107,6 @@ const styles = {
     boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
     maxWidth: "220px",
     flex: "1 1 200px",
-    transition: "background 0.3s, color 0.3s",
   },
   icon: {
     fontSize: "2.5rem",
