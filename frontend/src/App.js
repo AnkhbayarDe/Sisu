@@ -4,6 +4,7 @@ import Signup from "./components/Signup";
 import Login from "./components/Login";
 import Upload from "./components/Upload";
 import LandingPage from "./components/LandingPage";
+import MapView from "./components/MapView";
 
 import "./App.css";
 import "leaflet/dist/leaflet.css";
@@ -81,6 +82,7 @@ function App() {
       </nav>
 
       <Routes>
+      <Route path="/map" element={<MapView />} />
       <Route path="/" element={<LandingPage />} />
         <Route
           path="/signup"
