@@ -4,6 +4,19 @@ import MapView from "./MapView";
 
 const API_URL = "http://localhost:4000";
 
+// Define accepted file types
+const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp", 
+  "image/svg+xml", "image/tiff", "image/heic", "image/heif"
+];
+
+const ACCEPTED_VIDEO_TYPES = [
+  "video/mp4", "video/webm", "video/ogg", "video/quicktime", "video/x-msvideo",
+  "video/x-matroska", "video/mpeg", "video/3gpp", "video/x-ms-wmv", "video/x-flv"
+];
+
+const ACCEPTED_TYPES = [...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_VIDEO_TYPES];
+
 function Upload() {
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -29,16 +42,52 @@ function Upload() {
     }
   };
 
+  const isValidFileType = (file) => {
+    return ACCEPTED_TYPES.includes(file.type);
+  };
+
+  const getFileTypeCategory = (fileType) => {
+    if (ACCEPTED_IMAGE_TYPES.includes(fileType)) return "зураг";
+    if (ACCEPTED_VIDEO_TYPES.includes(fileType)) return "видео";
+    return "файл";
+  };
+
   const handleFileChange = (e) => {
+<<<<<<< HEAD
     if (e.target.files[0]) {
       setFile(e.target.files[0]);
       setMessage({ type: '', text: '' });
+=======
+    const selectedFile = e.target.files[0];
+    
+    if (selectedFile) {
+      if (isValidFileType(selectedFile)) {
+        setFile(selectedFile);
+        setMessage({ type: '', text: '' });
+      } else {
+        setFile(null);
+        // Reset file input
+        e.target.value = '';
+        setMessage({ 
+          type: 'error', 
+          text: `Зөвхөн зураг эсвэл видео файл оруулах боломжтой.` 
+        });
+      }
+>>>>>>> 60b58bc341a3fef1369c36cc856bfc65cafe3308
     }
   };
 
   const handleUpload = () => {
     if (!file) {
       setMessage({ type: 'error', text: 'Та файл сонгоно уу!' });
+      return;
+    }
+
+    if (!isValidFileType(file)) {
+      setMessage({ 
+        type: 'error', 
+        text: `Зөвхөн зураг эсвэл видео файл оруулах боломжтой.` 
+      });
       return;
     }
 
@@ -57,25 +106,48 @@ function Upload() {
             withCredentials: true,
             headers: { "Content-Type": "multipart/form-data" },
           });
+<<<<<<< HEAD
 
           setMessage({ type: 'success', text: 'Файл амжилттай оруулагдлаа!' });
+=======
+          
+          const fileCategory = getFileTypeCategory(file.type);
+          setMessage({ type: 'success', text: `${fileCategory} амжилттай орууллаа!` });
+>>>>>>> 60b58bc341a3fef1369c36cc856bfc65cafe3308
           setFile(null);
           document.getElementById('file-input').value = '';
           fetchUserFiles();
         } catch (err) {
+<<<<<<< HEAD
           setMessage({
             type: 'error',
             text: err.response?.data?.message || 'Файл оруулахад алдаа гарлаа. Дахин оролдоно уу.',
           });
+=======
+          let errorMsg = err.response?.data?.message || 'Файл оруулахад алдаа гарлаа. Дахин оролдоно уу.';
+          
+          // Handle specific server-side validation errors
+          if (err.response?.data?.error === 'invalid_file_type') {
+            errorMsg = 'Зөвхөн зураг эсвэл видео файл оруулах боломжтой.';
+          }
+          
+          setMessage({ type: 'error', text: errorMsg });
+>>>>>>> 60b58bc341a3fef1369c36cc856bfc65cafe3308
         } finally {
           setIsUploading(false);
         }
       },
       (error) => {
         console.error("Geolocation error:", error);
+<<<<<<< HEAD
         setMessage({
           type: 'error',
           text: 'Таны байршлыг авах боломжгүй байна. Байршил зөвшөөрлөө шалгана уу.',
+=======
+        setMessage({ 
+          type: 'error', 
+          text: 'Таны байршлыг авах боломжгүй байна. Байршлын зөвшөөрлөө шалгана уу.' 
+>>>>>>> 60b58bc341a3fef1369c36cc856bfc65cafe3308
         });
         setIsUploading(false);
       }
@@ -85,6 +157,7 @@ function Upload() {
   const theme = darkMode ? darkStyles : lightStyles;
 
   return (
+<<<<<<< HEAD
     <div style={{ ...styles.container, background: theme.background, color: theme.text }}>
       <div style={{ textAlign: "right", marginBottom: "1rem" }}>
         <button
@@ -105,9 +178,35 @@ function Upload() {
         <div style={styles.fileInputWrapper}>
           <input type="file" id="file-input" onChange={handleFileChange} style={styles.fileInput} />
           <label htmlFor="file-input" style={{ ...styles.fileInputLabel, backgroundColor: theme.primary }}>
+=======
+    <div style={styles.container} >
+      <div style={styles.uploadSection}>
+        <h2 style={styles.title}>Файл оруулах</h2>
+        
+        <p style={styles.description}>
+          Зөвхөн зураг болон видео файл оруулах боломжтой.
+        </p>
+        
+        <div style={styles.fileInputWrapper}>
+          <input
+            type="file"
+            id="file-input"
+            onChange={handleFileChange}
+            style={styles.fileInput}
+            accept="image/*,video/*" // HTML5 file input restriction
+          />
+          <label htmlFor="file-input" style={styles.fileInputLabel}>
+>>>>>>> 60b58bc341a3fef1369c36cc856bfc65cafe3308
             Файл сонгох
           </label>
-          {file && <span style={styles.fileName}>{file.name}</span>}
+          {file && (
+            <div style={styles.fileInfo}>
+              <span style={styles.fileName}>{file.name}</span>
+              <span style={styles.fileType}>
+                ({getFileTypeCategory(file.type)})
+              </span>
+            </div>
+          )}
         </div>
 
         <button
@@ -182,7 +281,16 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+<<<<<<< HEAD
     textAlign: "center",
+=======
+    marginBottom: "20px",
+    flexDirection: "column",
+    width: "100%",
+  },
+  fileInput: {
+    display: "none",
+>>>>>>> 60b58bc341a3fef1369c36cc856bfc65cafe3308
   },
   fileInputWrapper: { display: "flex", alignItems: "center", marginBottom: "20px", flexWrap: "wrap" },
   fileInput: { display: "none" },
@@ -195,7 +303,26 @@ const styles = {
     marginBottom: "10px",
     transition: "background-color 0.3s",
   },
+<<<<<<< HEAD
   fileName: { fontWeight: 500, wordBreak: "break-all", marginLeft: "10px" },
+=======
+  fileInfo: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    marginTop: "10px",
+  },
+  fileName: {
+    fontWeight: 500,
+    color: "#2c3e50",
+    wordBreak: "break-all",
+  },
+  fileType: {
+    color: "#7f8c8d",
+    fontSize: "0.9rem",
+    marginTop: "5px",
+  },
+>>>>>>> 60b58bc341a3fef1369c36cc856bfc65cafe3308
   uploadButton: {
     color: "white",
     border: "none",
@@ -210,8 +337,37 @@ const styles = {
     padding: "12px",
     borderRadius: "6px",
     fontSize: "14px",
+<<<<<<< HEAD
     maxWidth: "400px",
   },
+=======
+    width: "100%",
+    maxWidth: "400px",
+  },
+  successMessage: {
+    backgroundColor: "#d5f5e3",
+    color: "#27ae60",
+    border: "1px solid #2ecc71",
+  },
+  errorMessage: {
+    backgroundColor: "#fadbd8",
+    color: "#c0392b",
+    border: "1px solid #e74c3c",
+  },
+  filesSection: {
+    background: "#fff",
+    padding: "25px",
+    borderRadius: "12px",
+    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+    marginBottom: "30px",
+  },
+  subtitle: {
+    marginTop: 0,
+    color: "#2c3e50",
+    fontSize: "1.4rem",
+    marginBottom: "15px",
+  },
+>>>>>>> 60b58bc341a3fef1369c36cc856bfc65cafe3308
   mapSection: {
     padding: "25px",
     borderRadius: "12px",
