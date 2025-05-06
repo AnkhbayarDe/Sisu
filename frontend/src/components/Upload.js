@@ -9,17 +9,20 @@ function Upload() {
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [userFiles, setUserFiles] = useState([]);
+  const [darkMode, setDarkMode] = useState(true); // dark mode-оор эхлэх
 
-  // Fetch user's files on component mount
   useEffect(() => {
-    fetchUserFiles();
-  }, []);
-
+    document.body.style.backgroundColor = darkMode ? "#1a1a1a" : "#f9fafc";
+    document.body.style.color = darkMode ? "#f0f0f0" : "#333";
+    return () => {
+      document.body.style.backgroundColor = "";
+      document.body.style.color = "";
+    };
+  }, [darkMode]);
+  
   const fetchUserFiles = async () => {
     try {
-      const response = await axios.get(`${API_URL}/myfiles`, {
-        withCredentials: true
-      });
+      const response = await axios.get(`${API_URL}/myfiles`, { withCredentials: true });
       setUserFiles(response.data);
     } catch (error) {
       console.error("Error fetching files:", error);
@@ -29,7 +32,6 @@ function Upload() {
   const handleFileChange = (e) => {
     if (e.target.files[0]) {
       setFile(e.target.files[0]);
-      // Clear any previous messages
       setMessage({ type: '', text: '' });
     }
   };
@@ -42,8 +44,7 @@ function Upload() {
 
     setIsUploading(true);
     setMessage({ type: '', text: '' });
-    
-    // Request user's location and upload file
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const formData = new FormData();
@@ -54,21 +55,17 @@ function Upload() {
         try {
           await axios.post(`${API_URL}/upload`, formData, {
             withCredentials: true,
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
+            headers: { "Content-Type": "multipart/form-data" },
           });
-          
+
           setMessage({ type: 'success', text: 'Файл амжилттай оруулагдлаа!' });
           setFile(null);
-          // Reset file input
           document.getElementById('file-input').value = '';
-          // Refresh file list
           fetchUserFiles();
         } catch (err) {
-          setMessage({ 
-            type: 'error', 
-            text: err.response?.data?.message || 'Файл оруулахад алдаа гарлаа. Дахин оролдоно уу.' 
+          setMessage({
+            type: 'error',
+            text: err.response?.data?.message || 'Файл оруулахад алдаа гарлаа. Дахин оролдоно уу.',
           });
         } finally {
           setIsUploading(false);
@@ -76,190 +73,157 @@ function Upload() {
       },
       (error) => {
         console.error("Geolocation error:", error);
-        setMessage({ 
-          type: 'error', 
-          text: 'Таны байршлыг авах боломжгүй байна. Байршил зөвшөөрлөө шалгана уу.' 
+        setMessage({
+          type: 'error',
+          text: 'Таны байршлыг авах боломжгүй байна. Байршил зөвшөөрлөө шалгана уу.',
         });
         setIsUploading(false);
       }
     );
   };
 
+  const theme = darkMode ? darkStyles : lightStyles;
+
   return (
-    <div style={styles.container} >
-      <div style={styles.uploadSection}>
-        <h2 style={styles.title}>Файл оруулах</h2>
-        
-        
+    <div style={{ ...styles.container, background: theme.background, color: theme.text }}>
+      <div style={{ textAlign: "right", marginBottom: "1rem" }}>
+        <button
+          onClick={() => setDarkMode(!darkMode)}
+          style={{
+            ...styles.toggleButton,
+            background: darkMode ? "#f0f0f0" : "#333",
+            color: darkMode ? "#333" : "#f0f0f0",
+          }}
+        >
+          {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
+        </button>
+      </div>
+
+      <div style={{ ...styles.uploadSection, background: theme.card, color: theme.text }}>
+        <h2 style={{ fontSize: "2rem", marginBottom: "1rem" }}>Файл оруулах</h2>
+
         <div style={styles.fileInputWrapper}>
-          <input
-            type="file"
-            id="file-input"
-            onChange={handleFileChange}
-            style={styles.fileInput}
-          />
-          <label htmlFor="file-input" style={styles.fileInputLabel}>
+          <input type="file" id="file-input" onChange={handleFileChange} style={styles.fileInput} />
+          <label htmlFor="file-input" style={{ ...styles.fileInputLabel, backgroundColor: theme.primary }}>
             Файл сонгох
           </label>
           {file && <span style={styles.fileName}>{file.name}</span>}
         </div>
-        
-        <button 
-          onClick={handleUpload} 
+
+        <button
+          onClick={handleUpload}
           disabled={isUploading || !file}
           style={{
             ...styles.uploadButton,
-            ...(isUploading ? styles.uploadingButton : {}),
-            ...(!file ? styles.disabledButton : {})
+            backgroundColor: isUploading ? theme.warning : file ? theme.success : theme.disabled,
+            cursor: !file ? "not-allowed" : "pointer",
           }}
         >
           {isUploading ? 'Оруулж байна...' : 'Оруулах'}
         </button>
-        
+
         {message.text && (
-          <div style={{
-            ...styles.message,
-            ...(message.type === 'success' ? styles.successMessage : {}),
-            ...(message.type === 'error' ? styles.errorMessage : {})
-          }}>
+          <div
+            style={{
+              ...styles.message,
+              backgroundColor: message.type === 'success' ? theme.successBg : theme.errorBg,
+              color: message.type === 'success' ? theme.success : theme.error,
+              border: `1px solid ${message.type === 'success' ? theme.success : theme.error}`,
+            }}
+          >
             {message.text}
           </div>
         )}
       </div>
 
-
-      <div style={styles.mapSection}>
-        <h3 style={styles.subtitle}>Файл оруулсан байршил</h3>
-        <MapView userFiles={userFiles} />
+      <div style={{ ...styles.mapSection, background: theme.card, color: theme.text }}>
+        <h3 style={{ fontSize: "1.6rem", marginBottom: "1rem" }}>Файл оруулсан байршил</h3>
+        <div style={{ borderRadius: "12px", overflow: "hidden" }}>
+          <MapView userFiles={userFiles} />
+        </div>
       </div>
     </div>
   );
 }
 
+const lightStyles = {
+  background: "#f9fafc",
+  text: "#333",
+  card: "#fff",
+  primary: "#3498db",
+  success: "#2ecc71",
+  warning: "#f39c12",
+  error: "#c0392b",
+  disabled: "#bdc3c7",
+  successBg: "#d5f5e3",
+  errorBg: "#fadbd8",
+};
+
+const darkStyles = {
+  background: "#1a1a1a",
+  text: "#f0f0f0",
+  card: "#2a2a2a",
+  primary: "#2980b9",
+  success: "#27ae60",
+  warning: "#f1c40f",
+  error: "#e74c3c",
+  disabled: "#7f8c8d",
+  successBg: "#145a32",
+  errorBg: "#922b21",
+};
+
 const styles = {
-  container: {
-    padding: "20px",
-    maxWidth: "1000px",
-    margin: "0 auto",
-  },
+  container: { padding: "20px", maxWidth: "1000px", margin: "0 auto" },
   uploadSection: {
-    background: "#fff",
     padding: "25px",
     borderRadius: "12px",
-    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
     marginBottom: "30px",
-    display: "flex",           
-    flexDirection: "column",   
-    alignItems: "center",       
-    textAlign: "center",        
-  },
-  title: {
-    marginTop: 0,
-    color: "#2c3e50",
-    fontSize: "1.8rem",
-  },
-  description: {
-    color: "#7f8c8d",
-    marginBottom: "20px",
-  },
-  fileInputWrapper: {
     display: "flex",
+    flexDirection: "column",
     alignItems: "center",
-    marginBottom: "20px",
-    flexWrap: "wrap",
+    textAlign: "center",
   },
-  fileInput: {
-    display: "none",
-  },
+  fileInputWrapper: { display: "flex", alignItems: "center", marginBottom: "20px", flexWrap: "wrap" },
+  fileInput: { display: "none" },
   fileInputLabel: {
-    backgroundColor: "#3498db",
     color: "white",
     padding: "12px 18px",
     borderRadius: "6px",
     cursor: "pointer",
     fontWeight: 500,
-    display: "inline-block",
-    transition: "background-color 0.3s",
     marginBottom: "10px",
+    transition: "background-color 0.3s",
   },
-  fileName: {
-    fontWeight: 500,
-    color: "#2c3e50",
-    wordBreak: "break-all",
-  },
+  fileName: { fontWeight: 500, wordBreak: "break-all", marginLeft: "10px" },
   uploadButton: {
-    backgroundColor: "#2ecc71",
     color: "white",
     border: "none",
     padding: "12px 25px",
     fontSize: "16px",
     borderRadius: "6px",
-    cursor: "pointer",
     transition: "background-color 0.3s",
     fontWeight: 500,
-  },
-  uploadingButton: {
-    backgroundColor: "#f39c12",
-  },
-  disabledButton: {
-    backgroundColor: "#bdc3c7",
-    cursor: "not-allowed",
   },
   message: {
     marginTop: "15px",
     padding: "12px",
     borderRadius: "6px",
     fontSize: "14px",
-  },
-  successMessage: {
-    backgroundColor: "#d5f5e3",
-    color: "#27ae60",
-    border: "1px solid #2ecc71",
-  },
-  errorMessage: {
-    backgroundColor: "#fadbd8",
-    color: "#c0392b",
-    border: "1px solid #e74c3c",
-  },
-  filesSection: {
-    background: "#fff",
-    padding: "25px",
-    borderRadius: "12px",
-    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-    marginBottom: "30px",
-  },
-  subtitle: {
-    marginTop: 0,
-    color: "#2c3e50",
-    fontSize: "1.4rem",
-    marginBottom: "15px",
-  },
-  tableWrapper: {
-    overflowX: "auto",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-  },
-  tableHeader: {
-    textAlign: "left",
-    padding: "12px 15px",
-    backgroundColor: "#f8f9fa",
-    borderBottom: "2px solid #dee2e6",
-    color: "#2c3e50",
-  },
-  tableRow: {
-    borderBottom: "1px solid #dee2e6",
-  },
-  tableCell: {
-    padding: "12px 15px",
-    color: "#34495e",
+    maxWidth: "400px",
   },
   mapSection: {
-    background: "#fff",
     padding: "25px",
     borderRadius: "12px",
-    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+  },
+  toggleButton: {
+    padding: "6px 12px",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "0.9rem",
+    transition: "background-color 0.3s, color 0.3s",
   },
 };
 
