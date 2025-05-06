@@ -1,7 +1,5 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const User = require("./models/User");
-const File = require("./models/File");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const multer = require("multer");
@@ -21,25 +19,63 @@ app.use(
   })
 );
 
-const usersDB = mongoose.createConnection(process.env.MONGO_URI_USERS);
-const filesDB = mongoose.createConnection(process.env.MONGO_URI_FILES);
+// Connect to separate MongoDB databases
+const usersDB = mongoose.createConnection(process.env.MONGO_URI_USERS, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
-const FileModel = filesDB.model(
-  "File",
-  new mongoose.Schema({
-    filename: String,
-    contentType: String,
-    data: Buffer,
-  })
-);
+const filesDB = mongoose.createConnection(process.env.MONGO_URI_FILES, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
-const UserModel = usersDB.model(
-  "User",
-  new mongoose.Schema({
-    email: String,
-    password: String,
-  })
-);
+// Define models with their respective connections
+const UserSchema = new mongoose.Schema({
+  email: String,
+  password: String,
+});
+
+const FileSchema = new mongoose.Schema({
+  filename: {
+    type: String,
+    required: true
+  },
+  contentType: {
+    type: String,
+    required: true
+  },
+  data: {
+    type: Buffer,
+    required: true
+  },
+  userId: { 
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
+  },
+  location: {
+    lat: {
+      type: Number,
+      required: true
+    },
+    lng: {
+      type: Number,
+      required: true
+    }
+  },
+  uploadedAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+// Add indexes for faster queries
+FileSchema.index({ userId: 1 });
+FileSchema.index({ "location.lat": 1, "location.lng": 1 });
+
+// Create models with their specific connections
+const User = usersDB.model("User", UserSchema);
+const File = filesDB.model("File", FileSchema);
 
 // Middleware to check auth from cookie
 function authMiddleware(req, res, next) {
@@ -58,60 +94,131 @@ function authMiddleware(req, res, next) {
 // Signup
 app.post("/signup", async (req, res) => {
   const { email, password } = req.body;
-  const hashed = await bcrypt.hash(password, 10);
-  const user = new UserModel({ email, password: hashed });
-  await user.save();
-  res.send({ message: "User registered" });
+  
+  try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+    
+    const hashed = await bcrypt.hash(password, 10);
+    const user = new User({ email, password: hashed });
+    await user.save();
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (error) {
+    console.error("Signup error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 // Login
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  const user = await UserModel.findOne({ email });
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ message: "Invalid credentials" });
+  
+  try {
+    const user = await User.findOne({ email });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+    
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '24h'
+    });
+    
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: "Lax",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+    
+    res.json({ message: "Logged in successfully", userId: user._id });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error" });
   }
-  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: false,
-    sameSite: "Lax",
-    maxAge: 24 * 60 * 60 * 1000,
-  });
-  res.json({ message: "Logged in" });
 });
 
 // Check session
-app.get("/me", authMiddleware, (req, res) => {
-  res.json({ userId: req.userId });
+app.get("/me", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ userId: req.userId, email: user.email });
+  } catch (error) {
+    console.error("Session check error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 // Logout
 app.post("/logout", (req, res) => {
   res.clearCookie("token");
-  res.json({ message: "Logged out" });
+  res.json({ message: "Logged out successfully" });
 });
 
 // Upload file
 app.post("/upload", authMiddleware, upload.single("file"), async (req, res) => {
-  const { lat, lng } = req.body;
+  try {
+    // Get location data from request body
+    const { lat, lng } = req.body;
+    
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    
+    // Create new file record
+    const file = new File({
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+      data: req.file.buffer,
+      userId: req.userId, // Associate with logged in user
+      location: {
+        lat: parseFloat(lat),
+        lng: parseFloat(lng),
+      },
+      uploadedAt: new Date(),
+    });
 
-  const file = new FileModel({
-    filename: req.file.originalname,
-    contentType: req.file.mimetype,
-    data: req.file.buffer,
-    userId: req.userId,
-    location: {
-      lat: parseFloat(lat),
-      lng: parseFloat(lng),
-    },
-    uploadedAt: new Date(),
-  });
-
-  await file.save();
-  res.json({ message: "File uploaded" });
+    await file.save();
+    res.status(201).json({ 
+      message: "File uploaded successfully",
+      fileId: file._id,
+      filename: file.filename
+    });
+  } catch (error) {
+    console.error("File upload error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
-app.listen(process.env.PORT, () =>
-  console.log("Server running on port " + process.env.PORT)
-);
+// Get all files (could be filtered by user or other criteria)
+app.get("/files", authMiddleware, async (req, res) => {
+  try {
+    // You can add filters here if you want to get files for specific users
+    const files = await File.find().select('filename contentType userId location uploadedAt');
+    res.json(files);
+  } catch (error) {
+    console.error("Get files error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Get files for current user
+app.get("/myfiles", authMiddleware, async (req, res) => {
+  try {
+    const files = await File.find({ userId: req.userId }).select('filename contentType location uploadedAt');
+    res.json(files);
+  } catch (error) {
+    console.error("Get user files error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
