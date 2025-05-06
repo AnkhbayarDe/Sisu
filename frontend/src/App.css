@@ -36,3 +36,48 @@
     transform: rotate(360deg);
   }
 }
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+.auth-container,
+.upload-container {
+  max-width: 400px;
+  margin: 5rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.auth-container h2,
+.upload-container h2 {
+  margin-bottom: 1rem;
+  color: #222831;
+}
+
+input {
+  display: block;
+  width: 90%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  padding: 0.75rem 1.5rem;
+  background-color: #222831;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:disabled {
+  background-color: #393e46;
+  cursor: not-allowed;
+}

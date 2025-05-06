@@ -1,59 +1,140 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
+import { Routes, Route, Navigate, Link, useLocation } from "react-router-dom";
+import Signup from "./components/Signup";
+import Login from "./components/Login";
+import Upload from "./components/Upload";
+import "./App.css";
 
+import axios from "axios";
+axios.defaults.withCredentials = true;
 const API_URL = "http://localhost:4000";
 
 function App() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [token, setToken] = useState("");
-  const [file, setFile] = useState(null);
+  const [token, setToken] = useState(null);
 
-  const signup = async () => {
-    await axios.post(`${API_URL}/signup`, { email, password });
-    alert("Signed up!");
+  const PrivateRoute = ({ children }) => {
+    return token ? children : <Navigate to="/login" />;
   };
 
-  const login = async () => {
-    const res = await axios.post(`${API_URL}/login`, { email, password });
-    setToken(res.data.token);
-    alert("Logged in!");
+  const PublicRoute = ({ children }) => {
+    return token ? <Navigate to="/upload" /> : children;
   };
 
-  const upload = async () => {
-    const formData = new FormData();
-    formData.append("file", file);
-    await axios.post(`${API_URL}/upload`, formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-    });
-    alert("File uploaded!");
+  const logout = () => {
+    setToken("");
   };
+
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/me`, {
+          withCredentials: true,
+        });
+        if (res.data.userId) {
+          setToken("valid");
+        }
+      } catch (err) {
+        setToken(null);
+      }
+    };
+    checkSession();
+  }, []);
 
   return (
     <div>
-      <h2>Signup / Login</h2>
-      <input placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
-      <br />
-      <input
-        type="password"
-        placeholder="Password"
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <br />
-      <button onClick={signup}>Sign Up</button>
-      <button onClick={login}>Login</button>
+      <nav style={styles.nav}>
+        <h3 style={styles.title}>Citizen</h3>
+        <div>
+          {token ? (
+            <>
+              <Link to="/upload" style={styles.link}>
+                Файл оруулах
+              </Link>
+              <button onClick={logout} style={styles.button}>
+                Гарах
+              </button>
+            </>
+          ) : (
+            <>
+              {currentPath !== "/login" && (
+                <Link to="/login" style={styles.link}>
+                  Нэвтрэх
+                </Link>
+              )}
+              {currentPath !== "/signup" && (
+                <Link to="/signup" style={styles.link}>
+                  Бүртгүүлэх
+                </Link>
+              )}
+            </>
+          )}
+        </div>
+      </nav>
 
-      <h2>Upload File</h2>
-      <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-      <br />
-      <button onClick={upload} disabled={!token}>
-        Upload
-      </button>
+      <Routes>
+        <Route
+          path="/signup"
+          element={
+            <PublicRoute>
+              <Signup />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login setToken={setToken} />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/upload"
+          element={
+            <PrivateRoute>
+              <Upload token={token} />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="*"
+          element={<Navigate to={token ? "/upload" : "/login"} />}
+        />
+      </Routes>
     </div>
   );
 }
+
+const styles = {
+  nav: {
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "1rem 3rem",
+    background: "#393E46",
+    color: "white",
+    alignItems: "center",
+  },
+  title: {
+    margin: 0,
+  },
+  link: {
+    color: "white",
+    marginRight: "1rem",
+    textDecoration: "none",
+    fontWeight: "bold",
+    paddingRight: "20px",
+  },
+  button: {
+    background: "white",
+    color: "#393E46",
+    border: "none",
+    padding: "0.5rem 1rem",
+    cursor: "pointer",
+    borderRadius: "4px",
+  },
+};
 
 export default App;
