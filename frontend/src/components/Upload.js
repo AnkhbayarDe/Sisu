@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import MapView from "./MapView";
+import UserMap from "./UserMap";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = "http://localhost:4000";
 
@@ -37,6 +39,7 @@ function Upload() {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [userFiles, setUserFiles] = useState([]);
   const [darkMode, setDarkMode] = useState(true);
+  const navigate = useNavigate();
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
@@ -118,6 +121,11 @@ function Upload() {
           setFile(null);
           document.getElementById("file-input").value = "";
           fetchUserFiles();
+          // navigate("/detection", {
+          //   state: {
+          //     inputFileId: file._id,
+          //   },
+          // });
         } catch (err) {
           let errorMsg =
             err.response?.data?.message ||
@@ -213,10 +221,54 @@ function Upload() {
           </div>
         )}
       </div>
+      <div style={{ ...styles.mapSection, background: theme.card }}>
+        <h3>Таны оруулсан файлууд</h3>
+        {userFiles.length === 0 ? (
+          <p>Файл олдсонгүй.</p>
+        ) : (
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              marginTop: "10px",
+            }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: darkMode ? "#333" : "#eee" }}>
+                <th style={styles.tableHeader}>Нэр</th>
+                <th style={styles.tableHeader}>Төрөл</th>
+                <th style={styles.tableHeader}>Огноо</th>
+              </tr>
+            </thead>
+            <tbody>
+              {userFiles.map((file) => (
+                <tr
+                  key={file._id}
+                  onClick={() => navigate("/detection", { state: { file } })}
+                  style={{
+                    cursor: "pointer",
+                    borderBottom: "1px solid #ccc",
+                    backgroundColor: darkMode ? "#2a2a2a" : "#fff",
+                  }}
+                >
+                  <td style={styles.tableCell}>{file.filename}</td>
+                  <td style={styles.tableCell}>
+                    {getFileTypeCategory(file.contentType)}
+                  </td>
+                  <td style={styles.tableCell}>
+                    {new Date(file.uploadedAt).toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
 
       <div style={{ ...styles.mapSection, background: theme.card }}>
         <h3>Файл оруулсан байршил</h3>
-        <MapView userFiles={userFiles} />
+        {/* <MapView userFiles={userFiles} /> */}
+        {/* <UserMap userFiles={userFiles} /> */}
       </div>
     </div>
   );
@@ -349,6 +401,15 @@ const styles = {
     cursor: "pointer",
     fontSize: "0.9rem",
     transition: "background-color 0.3s, color 0.3s",
+  },
+  tableHeader: {
+    padding: "10px",
+    textAlign: "left",
+    fontWeight: "bold",
+    borderBottom: "2px solid #ccc",
+  },
+  tableCell: {
+    padding: "10px",
   },
 };
 

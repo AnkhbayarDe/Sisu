@@ -30,11 +30,10 @@ const filesDB = mongoose.createConnection(process.env.MONGO_URI_FILES, {
   useUnifiedTopology: true,
 });
 
-// Define models with their respective connections
 const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['user', 'admin'], default: 'user' }
+  role: { type: String, enum: ["user", "admin"], default: "user" },
 });
 
 const FileSchema = new mongoose.Schema({
@@ -70,15 +69,12 @@ const FileSchema = new mongoose.Schema({
   },
 });
 
-// Add indexes for faster queries
 FileSchema.index({ userId: 1 });
 FileSchema.index({ "location.lat": 1, "location.lng": 1 });
 
-// Create models with their specific connections
 const User = usersDB.model("User", UserSchema);
 const File = filesDB.model("File", FileSchema);
 
-// Middleware to check auth from cookie
 function authMiddleware(req, res, next) {
   const token = req.cookies.token;
   if (!token) return res.status(401).json({ message: "Unauthorized" });
@@ -103,7 +99,11 @@ async function createAdminIfNotExists() {
     }
 
     const hashed = await bcrypt.hash(adminPassword, 10);
-    const admin = new User({ email: adminEmail, password: hashed, role: "admin" });
+    const admin = new User({
+      email: adminEmail,
+      password: hashed,
+      role: "admin",
+    });
     await admin.save();
     console.log(`Admin account created: ${adminEmail}`);
   } catch (error) {
@@ -114,10 +114,12 @@ async function createAdminIfNotExists() {
 // Signup
 app.post("/signup", async (req, res) => {
   const { email, password } = req.body;
-    // Email format check (basic)
+  // Email format check (basic)
   const emailRegex = /^[^\s@]+@gmail\.com$/;
   if (!emailRegex.test(email)) {
-    return res.status(400).json({ message: "Имэйл @gmail.com бүтэцтэй байх ёстой." });
+    return res
+      .status(400)
+      .json({ message: "Имэйл @gmail.com бүтэцтэй байх ёстой." });
   }
 
   // Password requirements check
@@ -126,13 +128,19 @@ app.post("/signup", async (req, res) => {
   const hasNumber = /[0-9]/.test(password);
 
   if (password.length < minLength) {
-    return res.status(400).json({ message: "Нууц үг хамгийн багадаа 8 тэмдэгттэй байх ёстой." });
+    return res
+      .status(400)
+      .json({ message: "Нууц үг хамгийн багадаа 8 тэмдэгттэй байх ёстой." });
   }
   if (!hasLetter) {
-    return res.status(400).json({ message: "Нууц үгэнд дор хаяж нэг үсэг байх ёстой." });
+    return res
+      .status(400)
+      .json({ message: "Нууц үгэнд дор хаяж нэг үсэг байх ёстой." });
   }
   if (!hasNumber) {
-    return res.status(400).json({ message: "Нууц үгэнд дор хаяж нэг тоо байх ёстой." });
+    return res
+      .status(400)
+      .json({ message: "Нууц үгэнд дор хаяж нэг тоо байх ёстой." });
   }
   try {
     const existingUser = await User.findOne({ email });
@@ -141,11 +149,11 @@ app.post("/signup", async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = new User({ email, password: hashed ,role: 'user'});
+    const user = new User({ email, password: hashed, role: "user" });
     await user.save();
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
-    console.error("Signup error:", error);  
+    console.error("Signup error:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -160,9 +168,13 @@ app.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ userId: user._id , role:user.role}, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -185,7 +197,7 @@ app.get("/me", authMiddleware, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json({ userId: req.userId, email: user.email ,user: user.role});
+    res.json({ userId: req.userId, email: user.email, user: user.role });
   } catch (error) {
     console.error("Session check error:", error);
     res.status(500).json({ message: "Server error" });
@@ -204,14 +216,12 @@ app.post("/logout", (req, res) => {
 // Upload file with image/video validation
 app.post("/upload", authMiddleware, upload.single("file"), async (req, res) => {
   try {
-    // Get location data from request body
     const { lat, lng } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    // Define accepted file types
     const ACCEPTED_IMAGE_TYPES = [
       "image/jpeg",
       "image/png",
@@ -247,12 +257,11 @@ app.post("/upload", authMiddleware, upload.single("file"), async (req, res) => {
       });
     }
 
-    // Create new file record
     const file = new File({
       filename: req.file.originalname,
       contentType: req.file.mimetype,
       data: req.file.buffer,
-      userId: req.userId, // Associate with logged in user
+      userId: req.userId,
       location: {
         lat: parseFloat(lat),
         lng: parseFloat(lng),
@@ -272,7 +281,6 @@ app.post("/upload", authMiddleware, upload.single("file"), async (req, res) => {
   }
 });
 
-// Get all files (could be filtered by user or other criteria)
 app.get("/files", authMiddleware, async (req, res) => {
   try {
     // You can add filters here if you want to get files for specific users
@@ -286,22 +294,75 @@ app.get("/files", authMiddleware, async (req, res) => {
   }
 });
 
+app.get("/files/locations", authMiddleware, async (req, res) => {
+  const files = await File.find({ userId: req.userId }).select(
+    "filename location uploadedAt"
+  );
+  res.json(files);
+});
+
 // Get files for current user
 app.get("/myfiles", authMiddleware, async (req, res) => {
   try {
     const files = await File.find({ userId: req.userId }).select(
       "filename contentType location uploadedAt"
     );
-    res.json(files);
+
+    if (files.length === 0) {
+      return res.status(404).json({ message: "No files found" });
+    }
+
+    res.status(200).json(files);
   } catch (error) {
-    console.error("Get user files error:", error);
+    console.error("Error fetching user files:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, async() => {
+app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
   await createAdminIfNotExists();
 });
- 
+
+// app.get("/myfiles/:fileId", async (req, res) => {
+//   const { fileId } = req.params;
+
+//   try {
+//     // Fetch file by _id
+//     const file = await File.findById(fileId);
+
+//     if (!file) {
+//       return res.status(404).json({ message: "File not found" });
+//     }
+
+//     // Send the detection results as the response
+//     res.status(200).json({
+//       fileName: file.fileName,
+//       fileType: file.fileType,
+//       detectionResults: file.detectionResults,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+
+app.get("/myfiles/:id", async (req, res) => {
+  try {
+    const file = await File.findById(req.params.id);
+    if (file && file.data) {
+      const buffer = file.data.buffer;
+      const base64Image = buffer.toString("base64");
+      res.json({
+        image: base64Image,
+        contentType: file.contentType,
+        filename: file.filename,
+      });
+    } else {
+      res.status(404).json({ message: "File not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: "Server Error", error: err });
+  }
+});

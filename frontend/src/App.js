@@ -10,6 +10,7 @@ import "./App.css";
 import "leaflet/dist/leaflet.css";
 
 import axios from "axios";
+import DetectionResult from "./components/DetectionResult";
 axios.defaults.withCredentials = true;
 const API_URL = "http://localhost:4000";
 
@@ -117,6 +118,14 @@ function App() {
           element={
             <PrivateRoute>
               <Upload token={token} />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/detection"
+          element={
+            <PrivateRoute>
+              <DetectionResult token={token} />
             </PrivateRoute>
           }
         />
