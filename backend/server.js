@@ -325,44 +325,26 @@ app.listen(PORT, async () => {
   await createAdminIfNotExists();
 });
 
-// app.get("/myfiles/:fileId", async (req, res) => {
-//   const { fileId } = req.params;
-
-//   try {
-//     // Fetch file by _id
-//     const file = await File.findById(fileId);
-
-//     if (!file) {
-//       return res.status(404).json({ message: "File not found" });
-//     }
-
-//     // Send the detection results as the response
-//     res.status(200).json({
-//       fileName: file.fileName,
-//       fileType: file.fileType,
-//       detectionResults: file.detectionResults,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// });
 
 app.get("/myfiles/:id", async (req, res) => {
   try {
     const file = await File.findById(req.params.id);
     if (file && file.data) {
-      const buffer = file.data.buffer;
-      const base64Image = buffer.toString("base64");
+      // Make sure we're sending valid base64 data
+      // Buffer.from() will handle the case even if file.data is already a Buffer
+      const buffer = Buffer.from(file.data);
+      const base64Image = buffer.toString('base64');
+      
       res.json({
         image: base64Image,
         contentType: file.contentType,
-        filename: file.filename,
+        filename: file.filename
       });
     } else {
       res.status(404).json({ message: "File not found" });
     }
   } catch (err) {
-    res.status(500).json({ message: "Server Error", error: err });
+    console.error("Error getting file:", err);
+    res.status(500).json({ message: "Server Error", error: err.message });
   }
 });

@@ -7,7 +7,7 @@ const API_URL = "http://localhost:4000";
 function DetectionResult() {
   const [darkMode, setDarkMode] = useState(true);
   const [detectionData, setDetectionData] = useState(null);
-  const [imageSrc, setImageSrc] = useState(null); // State for image
+  const [imageData, setImageData] = useState(null);
   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -23,50 +23,34 @@ function DetectionResult() {
     };
   }, [darkMode]);
 
-  // Function to fetch image
-  // const fetchImage = async () => {
-  //   if (location.state?.file?._id) {
-  //     try {
-  //       const response = await axios.get(
-  //         `${API_URL}/myfiles/${location.state.file._id}`,
-  //         { withCredentials: true }
-  //       );
-  //       // Set the image source as a base64-encoded string
-  //       setImageSrc(
-  //         `data:${response.data.contentType};base64,${response.data.image}`
-  //       );
-  //     } catch (error) {
-  //       console.error("Error fetching image:", error);
-  //     }
-  //   }
-  // };
-  const fetchImage = async () => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/myfiles/${location.state.file._id}`,
-        { withCredentials: true }
-      );
-      setImageSrc(response.data);
-    } catch (err) {
-      console.error("Error fetching image data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchDetectionData = async () => {
+  const fetchData = async () => {
     if (location.state?.file?._id) {
       try {
         setLoading(true);
+        console.log("Fetching file with ID:", location.state.file._id);
+        
         const response = await axios.get(
           `${API_URL}/myfiles/${location.state.file._id}`,
-          { withCredentials: true }
+          { 
+            withCredentials: true,
+            // Explicitly handle the response as JSON
+            responseType: 'json'
+          }
         );
-        setDetectionData(response.data.detectionResults);
-        // Fetch the image data
-        fetchImage();
+        
+        console.log("Response received:", response.data);
+        
+        // Set the image data
+        if (response.data && response.data.image) {
+          setImageData(response.data);
+        }
+        
+        // Set detection data if available
+        if (response.data && response.data.detectionResults) {
+          setDetectionData(response.data.detectionResults);
+        }
       } catch (error) {
-        console.error("Error fetching detection data:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
@@ -77,11 +61,25 @@ function DetectionResult() {
 
   useEffect(() => {
     if (location.state?.file?._id) {
-      fetchDetectionData();
+      fetchData();
     }
   }, [location.state?.file?._id]);
 
   const theme = darkMode ? darkStyles : lightStyles;
+
+  // Safely create image URL
+  const getImageUrl = () => {
+    if (!imageData || !imageData.image || !imageData.contentType) {
+      return null;
+    }
+    
+    // Make sure the image data is properly formatted
+    // Remove any whitespace or newlines that might be in the base64 string
+    const cleanedImageData = imageData.image.trim();
+    
+    // Return a valid data URL
+    return `data:${imageData.contentType};base64,${cleanedImageData}`;
+  };
 
   return (
     <div
@@ -129,14 +127,36 @@ function DetectionResult() {
         )}
 
         {/* Display the image if available */}
-        {imageSrc && (
-          <div style={{ marginTop: "20px" }}>
+        {imageData && imageData.image && (
+          <div style={{ marginTop: "20px", textAlign: "center" }}>
             <h3>Зураг:</h3>
-            <img
-              src={`data:${imageSrc.contentType};base64,${imageSrc.image}`}
-              alt={imageSrc.filename}
-              style={{ maxWidth: "100%" }}
-            />
+            <div style={{ 
+              border: `1px solid ${darkMode ? '#444' : '#ddd'}`,
+              borderRadius: "8px",
+              padding: "10px",
+              marginTop: "10px",
+              maxWidth: "100%",
+              overflow: "hidden"
+            }}>
+              {getImageUrl() ? (
+                <img
+                  src={getImageUrl()}
+                  alt={imageData.filename || "Uploaded image"}
+                  style={{ 
+                    maxWidth: "100%", 
+                    borderRadius: "4px",
+                    display: "block",
+                    margin: "0 auto"
+                  }}
+                  onError={(e) => {
+                    console.error("Image failed to load");
+                    e.target.style.display = "none";
+                  }}
+                />
+              ) : (
+                <p>Cannot display image - invalid or missing image data</p>
+              )}
+            </div>
           </div>
         )}
 
@@ -151,6 +171,8 @@ function DetectionResult() {
           Буцах
         </button>
       </div>
+      
+      
     </div>
   );
 }
@@ -183,16 +205,15 @@ const darkStyles = {
 
 const styles = {
   container: { padding: "20px", maxWidth: "1000px", margin: "0 auto" },
+  title: { marginBottom: "20px", textAlign: "center" },
   uploadSection: {
-    padding: "25px 0",
+    padding: "25px",
     borderRadius: "12px",
     boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
     marginBottom: "30px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    marginBottom: "20px",
-    flexDirection: "column",
     width: "100%",
   },
   fileInfo: {
@@ -219,6 +240,7 @@ const styles = {
     borderRadius: "6px",
     transition: "background-color 0.3s",
     fontWeight: 500,
+    cursor: "pointer",
   },
   errorMessage: {
     backgroundColor: "#fadbd8",
