@@ -5,13 +5,28 @@ import MapView from "./MapView";
 const API_URL = "http://localhost:4000";
 
 const ACCEPTED_IMAGE_TYPES = [
-  "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp", 
-  "image/svg+xml", "image/tiff", "image/heic", "image/heif"
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/bmp",
+  "image/webp",
+  "image/svg+xml",
+  "image/tiff",
+  "image/heic",
+  "image/heif",
 ];
 
 const ACCEPTED_VIDEO_TYPES = [
-  "video/mp4", "video/webm", "video/ogg", "video/quicktime", "video/x-msvideo",
-  "video/x-matroska", "video/mpeg", "video/3gpp", "video/x-ms-wmv", "video/x-flv"
+  "video/mp4",
+  "video/webm",
+  "video/ogg",
+  "video/quicktime",
+  "video/x-msvideo",
+  "video/x-matroska",
+  "video/mpeg",
+  "video/3gpp",
+  "video/x-ms-wmv",
+  "video/x-flv",
 ];
 
 const ACCEPTED_TYPES = [...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_VIDEO_TYPES];
@@ -19,7 +34,7 @@ const ACCEPTED_TYPES = [...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_VIDEO_TYPES];
 function Upload() {
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [message, setMessage] = useState({ type: "", text: "" });
   const [userFiles, setUserFiles] = useState([]);
   const [darkMode, setDarkMode] = useState(true);
 
@@ -40,7 +55,9 @@ function Upload() {
 
   const fetchUserFiles = async () => {
     try {
-      const response = await axios.get(`${API_URL}/myfiles`, { withCredentials: true });
+      const response = await axios.get(`${API_URL}/myfiles`, {
+        withCredentials: true,
+      });
       setUserFiles(response.data);
     } catch (error) {
       console.error("Error fetching files:", error);
@@ -60,23 +77,26 @@ function Upload() {
     if (selectedFile) {
       if (isValidFileType(selectedFile)) {
         setFile(selectedFile);
-        setMessage({ type: '', text: '' });
+        setMessage({ type: "", text: "" });
       } else {
         setFile(null);
-        e.target.value = '';
-        setMessage({ type: 'error', text: `Зөвхөн зураг эсвэл видео файл оруулах боломжтой.` });
+        e.target.value = "";
+        setMessage({
+          type: "error",
+          text: `Зөвхөн зураг эсвэл видео файл оруулах боломжтой.`,
+        });
       }
     }
   };
 
   const handleUpload = () => {
     if (!file) {
-      setMessage({ type: 'error', text: 'Та файл сонгоно уу!' });
+      setMessage({ type: "error", text: "Та файл сонгоно уу!" });
       return;
     }
 
     setIsUploading(true);
-    setMessage({ type: '', text: '' });
+    setMessage({ type: "", text: "" });
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -91,20 +111,28 @@ function Upload() {
             headers: { "Content-Type": "multipart/form-data" },
           });
           const fileCategory = getFileTypeCategory(file.type);
-          setMessage({ type: 'success', text: `${fileCategory} амжилттай орууллаа!` });
+          setMessage({
+            type: "success",
+            text: `${fileCategory} амжилттай орууллаа!`,
+          });
           setFile(null);
-          document.getElementById('file-input').value = '';
+          document.getElementById("file-input").value = "";
           fetchUserFiles();
         } catch (err) {
-          let errorMsg = err.response?.data?.message || 'Файл оруулахад алдаа гарлаа. Дахин оролдоно уу.';
-          setMessage({ type: 'error', text: errorMsg });
+          let errorMsg =
+            err.response?.data?.message ||
+            "Файл оруулахад алдаа гарлаа. Дахин оролдоно уу.";
+          setMessage({ type: "error", text: errorMsg });
         } finally {
           setIsUploading(false);
         }
       },
       (error) => {
         console.error("Geolocation error:", error);
-        setMessage({ type: 'error', text: 'Таны байршлыг авах боломжгүй байна. Байршлын зөвшөөрлөө шалгана уу.' });
+        setMessage({
+          type: "error",
+          text: "Таны байршлыг авах боломжгүй байна. Байршлын зөвшөөрлөө шалгана уу.",
+        });
         setIsUploading(false);
       }
     );
@@ -113,7 +141,13 @@ function Upload() {
   const theme = darkMode ? darkStyles : lightStyles;
 
   return (
-    <div style={{ ...styles.container, background: theme.background, color: theme.text }}>
+    <div
+      style={{
+        ...styles.container,
+        background: theme.background,
+        color: theme.text,
+      }}
+    >
       <div style={{ textAlign: "right", marginBottom: "1rem", width: "100%" }}>
         <button onClick={toggleDarkMode} style={styles.toggleButton}>
           {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
@@ -124,12 +158,25 @@ function Upload() {
         <h2 style={styles.title}>Файл оруулах</h2>
         <p>Зөвхөн зураг болон видео файл оруулах боломжтой.</p>
         <div style={styles.fileInputWrapper}>
-          <input type="file" id="file-input" onChange={handleFileChange} style={styles.fileInput} accept="image/*,video/*" />
-          <label htmlFor="file-input" style={{ ...styles.fileInputLabel, backgroundColor: theme.primary }}>Файл сонгох</label>
+          <input
+            type="file"
+            id="file-input"
+            onChange={handleFileChange}
+            style={styles.fileInput}
+            accept="image/*,video/*"
+          />
+          <label
+            htmlFor="file-input"
+            style={{ ...styles.fileInputLabel, backgroundColor: theme.primary }}
+          >
+            Файл сонгох
+          </label>
           {file && (
             <div style={styles.fileInfo}>
               <span style={styles.fileName}>{file.name}</span>
-              <span style={styles.fileType}>({getFileTypeCategory(file.type)})</span>
+              <span style={styles.fileType}>
+                ({getFileTypeCategory(file.type)})
+              </span>
             </div>
           )}
         </div>
@@ -139,20 +186,29 @@ function Upload() {
           disabled={isUploading || !file}
           style={{
             ...styles.uploadButton,
-            backgroundColor: isUploading ? theme.warning : file ? theme.success : theme.disabled,
+            backgroundColor: isUploading
+              ? theme.warning
+              : file
+              ? theme.success
+              : theme.disabled,
             cursor: !file ? "not-allowed" : "pointer",
           }}
         >
-          {isUploading ? 'Оруулж байна...' : 'Оруулах'}
+          {isUploading ? "Оруулж байна..." : "Оруулах"}
         </button>
 
         {message.text && (
-          <div style={{
-            ...styles.message,
-            backgroundColor: message.type === 'success' ? theme.successBg : theme.errorBg,
-            color: message.type === 'success' ? theme.success : theme.error,
-            border: `1px solid ${message.type === 'success' ? theme.success : theme.error}`,
-          }}>
+          <div
+            style={{
+              ...styles.message,
+              backgroundColor:
+                message.type === "success" ? theme.successBg : theme.errorBg,
+              color: message.type === "success" ? theme.success : theme.error,
+              border: `1px solid ${
+                message.type === "success" ? theme.success : theme.error
+              }`,
+            }}
+          >
             {message.text}
           </div>
         )}
@@ -165,7 +221,6 @@ function Upload() {
     </div>
   );
 }
-
 
 const lightStyles = {
   background: "#f9fafc",
@@ -196,7 +251,7 @@ const darkStyles = {
 const styles = {
   container: { padding: "20px", maxWidth: "1000px", margin: "0 auto" },
   uploadSection: {
-    padding: "25px",
+    padding: "25px 0",
     borderRadius: "12px",
     boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
     marginBottom: "30px",
@@ -210,7 +265,12 @@ const styles = {
   fileInput: {
     display: "none",
   },
-  fileInputWrapper: { display: "flex", alignItems: "center", marginBottom: "20px", flexWrap: "wrap" },
+  fileInputWrapper: {
+    display: "flex",
+    alignItems: "center",
+    marginBottom: "20px",
+    flexWrap: "wrap",
+  },
   fileInput: { display: "none" },
   fileInputLabel: {
     color: "white",

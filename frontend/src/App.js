@@ -15,13 +15,16 @@ const API_URL = "http://localhost:4000";
 
 function App() {
   const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const PrivateRoute = ({ children }) => {
+    if (loading) return <div>Loading...</div>;
     return token ? children : <Navigate to="/login" />;
   };
 
   const PublicRoute = ({ children }) => {
-    return token ? <Navigate to="/upload" /> : children;
+    if (loading) return <div>Loading...</div>;
+    return token ? <Navigate to="/" /> : children;
   };
 
   const logout = async () => {
@@ -49,6 +52,8 @@ function App() {
         }
       } catch (err) {
         setToken(null);
+      } finally {
+        setLoading(false);
       }
     };
     checkSession();
