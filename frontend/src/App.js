@@ -24,8 +24,15 @@ function App() {
     return token ? <Navigate to="/upload" /> : children;
   };
 
-  const logout = () => {
-    setToken("");
+  const logout = async () => {
+    try {
+      await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
+      setToken(null);
+      alert("Амжилттай гарлаа!");
+    } catch (err) {
+      console.error("Logout failed", err);
+      alert("Гарахад алдаа гарлаа");
+    }
   };
 
   const location = useLocation();
@@ -58,7 +65,7 @@ function App() {
                 Файл оруулах
               </Link>
               <Link to="/" style={styles.link}>
-              Home
+                Home
               </Link>
               <button onClick={logout} style={styles.button}>
                 Гарах
@@ -82,8 +89,8 @@ function App() {
       </nav>
 
       <Routes>
-      <Route path="/map" element={<MapView />} />
-      <Route path="/" element={<LandingPage />} />
+        <Route path="/map" element={<MapView />} />
+        <Route path="/" element={<LandingPage />} />
         <Route
           path="/signup"
           element={

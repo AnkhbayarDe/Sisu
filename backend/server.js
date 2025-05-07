@@ -123,7 +123,7 @@ app.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "24h",
+      expiresIn: "1h",
     });
 
     res.cookie("token", token, {
@@ -156,10 +156,13 @@ app.get("/me", authMiddleware, async (req, res) => {
 
 // Logout
 app.post("/logout", (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Lax",
+  });
   res.json({ message: "Logged out successfully" });
 });
-
 // Upload file with image/video validation
 app.post("/upload", authMiddleware, upload.single("file"), async (req, res) => {
   try {

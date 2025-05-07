@@ -18,7 +18,7 @@ function Login({ setToken }) {
       );
       setToken("valid");
       alert("Амжилттай нэвтэрлээ!");
-      navigate("/upload");
+      navigate("/");
     } catch (err) {
       alert("Нэвтрэхэд алдаа гарлаа");
     }
