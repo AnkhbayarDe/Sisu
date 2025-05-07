@@ -32,8 +32,9 @@ const filesDB = mongoose.createConnection(process.env.MONGO_URI_FILES, {
 
 // Define models with their respective connections
 const UserSchema = new mongoose.Schema({
-  email: String,
-  password: String,
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' }
 });
 
 const FileSchema = new mongoose.Schema({
@@ -90,6 +91,25 @@ function authMiddleware(req, res, next) {
     res.status(401).json({ message: "Invalid token" });
   }
 }
+async function createAdminIfNotExists() {
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
+  const adminPassword = process.env.ADMIN_PASSWORD || "Admin1234";
+
+  try {
+    const existingAdmin = await User.findOne({ email: adminEmail });
+    if (existingAdmin) {
+      console.log("Admin account already exists.");
+      return;
+    }
+
+    const hashed = await bcrypt.hash(adminPassword, 10);
+    const admin = new User({ email: adminEmail, password: hashed, role: "admin" });
+    await admin.save();
+    console.log(`Admin account created: ${adminEmail}`);
+  } catch (error) {
+    console.error("Failed to create admin account:", error);
+  }
+}
 
 // Signup
 app.post("/signup", async (req, res) => {
@@ -103,7 +123,7 @@ app.post("/signup", async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = new User({ email, password: hashed });
+    const user = new User({ email, password: hashed ,role: 'user'});
     await user.save();
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
@@ -122,7 +142,7 @@ app.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ userId: user._id , role:user.role}, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
 
@@ -147,7 +167,7 @@ app.get("/me", authMiddleware, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json({ userId: req.userId, email: user.email });
+    res.json({ userId: req.userId, email: user.email ,user: user.role});
   } catch (error) {
     console.error("Session check error:", error);
     res.status(500).json({ message: "Server error" });
@@ -262,6 +282,8 @@ app.get("/myfiles", authMiddleware, async (req, res) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
+app.listen(PORT, async() => {
   console.log(`Server running on port ${PORT}`);
+  await createAdminIfNotExists();
 });
+ 
