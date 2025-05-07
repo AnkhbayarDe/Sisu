@@ -114,9 +114,27 @@ async function createAdminIfNotExists() {
 // Signup
 app.post("/signup", async (req, res) => {
   const { email, password } = req.body;
+    // Email format check (basic)
+  const emailRegex = /^[^\s@]+@gmail\.com$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ message: "Имэйл @gmail.com бүтэцтэй байх ёстой." });
+  }
 
+  // Password requirements check
+  const minLength = 8;
+  const hasLetter = /[A-Za-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+
+  if (password.length < minLength) {
+    return res.status(400).json({ message: "Нууц үг хамгийн багадаа 8 тэмдэгттэй байх ёстой." });
+  }
+  if (!hasLetter) {
+    return res.status(400).json({ message: "Нууц үгэнд дор хаяж нэг үсэг байх ёстой." });
+  }
+  if (!hasNumber) {
+    return res.status(400).json({ message: "Нууц үгэнд дор хаяж нэг тоо байх ёстой." });
+  }
   try {
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
@@ -127,7 +145,7 @@ app.post("/signup", async (req, res) => {
     await user.save();
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
-    console.error("Signup error:", error);
+    console.error("Signup error:", error);  
     res.status(500).json({ message: "Server error" });
   }
 });

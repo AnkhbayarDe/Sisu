@@ -8,17 +8,6 @@ function Signup() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return "Имэйл хаяг буруу байна.";
-    }
-    if (!/@gmail\.com$/.test(email)) {
-      return "Зөвхөн gmail хаяг ашиглах ёстой.";
-    }
-    return "";
-  };
-
   const validatePassword = (password) => {
     const minLength = 8;
     const hasLetter = /[A-Za-z]/.test(password);
@@ -37,15 +26,9 @@ function Signup() {
   };
 
   const signup = async () => {
-    const emailError = validateEmail(email);
-    if (emailError) {
-      setMessage(emailError);
-      return;
-    }
-
-    const passwordError = validatePassword(password);
-    if (passwordError) {
-      setMessage(passwordError);
+    const validationError = validatePassword(password);
+    if (validationError) {
+      setMessage(validationError);
       return;
     }
 
@@ -57,68 +40,76 @@ function Signup() {
     }
   };
 
+  const containerStyle = {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100vh",
+    backgroundColor: "#fff",
+  };
+
+  const boxStyle = {
+    backgroundColor: "#fff",
+    padding: "2rem",
+    borderRadius: "8px",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+    width: "400px",
+    textAlign: "center",
+
+  };
+
+  const inputStyle = {
+    width: "93%",
+    padding: "12px",
+    marginBottom: "15px",
+    border: "1px solid #dcdcdc",
+    borderRadius: "6px",
+    backgroundColor: "#edf2ff",
+  };
+
+  const buttonStyle = {
+    width: "100%",
+    padding: "0.8rem",
+    marginTop: "1rem",
+    backgroundColor: "#212529",
+    color: "#fff",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    transition: "background-color 0.3s",
+  };
+
+  const messageStyle = {
+    marginTop: "1rem",
+    color: "#e74c3c",
+    fontSize: "0.9rem",
+  };
+
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Бүртгүүлэх</h2>
-      <input
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        style={styles.input}
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button style={styles.button} onClick={signup}>
-        Бүртгүүлэх
-      </button>
-      {message && <p style={styles.message}>{message}</p>}
+    <div style={containerStyle}>
+      <div style={boxStyle}>
+        <h2>Бүртгүүлэх</h2>
+        <input
+          style={inputStyle}
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          style={inputStyle}
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button style={buttonStyle} onClick={signup}>
+          Бүртгүүлэх
+        </button>
+        {message && <p style={messageStyle}>{message}</p>}
+      </div>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    maxWidth: "400px",
-    margin: "50px auto",
-    padding: "30px",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    textAlign: "center",
-    backgroundColor: "#f9fafc",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-  },
-  title: {
-    fontSize: "24px",
-    marginBottom: "20px",
-  },
-  input: {
-    width: "100%",
-    padding: "10px",
-    margin: "10px 0",
-    borderRadius: "4px",
-    border: "1px solid #ccc",
-    fontSize: "16px",
-  },
-  button: {
-    width: "100%",
-    padding: "10px",
-    backgroundColor: "#3498db",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    fontSize: "16px",
-    cursor: "pointer",
-  },
-  message: {
-    marginTop: "15px",
-    color: "#e74c3c",
-    fontWeight: "bold",
-  },
-};
 
 export default Signup;
