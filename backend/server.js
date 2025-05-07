@@ -39,34 +39,34 @@ const UserSchema = new mongoose.Schema({
 const FileSchema = new mongoose.Schema({
   filename: {
     type: String,
-    required: true
+    required: true,
   },
   contentType: {
     type: String,
-    required: true
+    required: true,
   },
   data: {
     type: Buffer,
-    required: true
+    required: true,
   },
-  userId: { 
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true
+    required: true,
   },
   location: {
     lat: {
       type: Number,
-      required: true
+      required: true,
     },
     lng: {
       type: Number,
-      required: true
-    }
+      required: true,
+    },
   },
   uploadedAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 // Add indexes for faster queries
@@ -94,14 +94,14 @@ function authMiddleware(req, res, next) {
 // Signup
 app.post("/signup", async (req, res) => {
   const { email, password } = req.body;
-  
+
   try {
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
-    
+
     const hashed = await bcrypt.hash(password, 10);
     const user = new User({ email, password: hashed });
     await user.save();
@@ -115,24 +115,24 @@ app.post("/signup", async (req, res) => {
 // Login
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  
+
   try {
     const user = await User.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
-    
+
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '24h'
+      expiresIn: "24h",
     });
-    
+
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === "production",
       sameSite: "Lax",
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      maxAge: 60 * 60 * 1000,
     });
-    
+
     res.json({ message: "Logged in successfully", userId: user._id });
   } catch (error) {
     console.error("Login error:", error);
@@ -143,7 +143,7 @@ app.post("/login", async (req, res) => {
 // Check session
 app.get("/me", authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select('-password');
+    const user = await User.findById(req.userId).select("-password");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -165,32 +165,47 @@ app.post("/upload", authMiddleware, upload.single("file"), async (req, res) => {
   try {
     // Get location data from request body
     const { lat, lng } = req.body;
-    
+
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
-    
+
     // Define accepted file types
     const ACCEPTED_IMAGE_TYPES = [
-      "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp", 
-      "image/svg+xml", "image/tiff", "image/heic", "image/heif"
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/bmp",
+      "image/webp",
+      "image/svg+xml",
+      "image/tiff",
+      "image/heic",
+      "image/heif",
     ];
 
     const ACCEPTED_VIDEO_TYPES = [
-      "video/mp4", "video/webm", "video/ogg", "video/quicktime", "video/x-msvideo",
-      "video/x-matroska", "video/mpeg", "video/3gpp", "video/x-ms-wmv", "video/x-flv"
+      "video/mp4",
+      "video/webm",
+      "video/ogg",
+      "video/quicktime",
+      "video/x-msvideo",
+      "video/x-matroska",
+      "video/mpeg",
+      "video/3gpp",
+      "video/x-ms-wmv",
+      "video/x-flv",
     ];
 
     const ACCEPTED_TYPES = [...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_VIDEO_TYPES];
-    
+
     // Validate file type server-side
     if (!ACCEPTED_TYPES.includes(req.file.mimetype)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "Invalid file type. Only images and videos are allowed.",
-        error: "invalid_file_type"
+        error: "invalid_file_type",
       });
     }
-    
+
     // Create new file record
     const file = new File({
       filename: req.file.originalname,
@@ -205,10 +220,10 @@ app.post("/upload", authMiddleware, upload.single("file"), async (req, res) => {
     });
 
     await file.save();
-    res.status(201).json({ 
+    res.status(201).json({
       message: "File uploaded successfully",
       fileId: file._id,
-      filename: file.filename
+      filename: file.filename,
     });
   } catch (error) {
     console.error("File upload error:", error);
@@ -220,7 +235,9 @@ app.post("/upload", authMiddleware, upload.single("file"), async (req, res) => {
 app.get("/files", authMiddleware, async (req, res) => {
   try {
     // You can add filters here if you want to get files for specific users
-    const files = await File.find().select('filename contentType userId location uploadedAt');
+    const files = await File.find().select(
+      "filename contentType userId location uploadedAt"
+    );
     res.json(files);
   } catch (error) {
     console.error("Get files error:", error);
@@ -231,7 +248,9 @@ app.get("/files", authMiddleware, async (req, res) => {
 // Get files for current user
 app.get("/myfiles", authMiddleware, async (req, res) => {
   try {
-    const files = await File.find({ userId: req.userId }).select('filename contentType location uploadedAt');
+    const files = await File.find({ userId: req.userId }).select(
+      "filename contentType location uploadedAt"
+    );
     res.json(files);
   } catch (error) {
     console.error("Get user files error:", error);
