@@ -99,3 +99,6 @@ button:disabled {
 a:hover {
   color: #1abc9c;
 }
+.leaflet-routing-container {
+  display: none !important;
+}
