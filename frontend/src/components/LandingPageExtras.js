@@ -1,9 +1,10 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+
 const demoImages = [
-  { src: "/demo1.jpg", alt: "Зураг 1" },
-  { src: "/demo2.jpg", alt: "Зураг 2" },
-  { src: "/demo3.jpg", alt: "Зураг 3" },
+  { src: "/parking1.jpg", alt: "Чөлөөт зогсоол 1" },
+  { src: "/parking2.jpg", alt: "Чөлөөт зогсоол 2" },
+  { src: "/parking3.jpg", alt: "Чөлөөт зогсоол 3" },
 ];
 
 const FeatureCard = ({ icon, title, description, darkMode, onClick }) => (
@@ -34,7 +35,7 @@ const FeatureCard = ({ icon, title, description, darkMode, onClick }) => (
 const LandingPageExtras = ({ darkMode }) => {
   const navigate = useNavigate();
   const theme = darkMode ? styles.dark : styles.light;
-  const icons = darkMode ? ["📷", "🧿", "🌌", "⚡"] : ["📸", "🔴", "🌍", "✅"];
+  const icons = darkMode ? ["🚗", "🗺️", "📍", "📊"] : ["🚙", "🌍", "🅿️", "📈"];
 
   return (
     <div style={{ ...styles.extrasContainer, background: theme.background, color: theme.color }}>
@@ -42,32 +43,32 @@ const LandingPageExtras = ({ darkMode }) => {
       <div style={styles.cardContainer}>
         <FeatureCard
           icon={icons[0]}
-          title="Зураг, бичлэг илгээх"
-          description="Тулгарсан асуудлаа зураг, бичлэгээр илгээх."
+          title="Чөлөөт зогсоол илрүүлэх"
+          description="Бодит цагийн чөлөөт зогсоолуудыг автоматаар илрүүлж харуулах."
           darkMode={darkMode}
           onClick={() => navigate("/upload")}
         />
         <FeatureCard
           icon={icons[1]}
-          title="Шууд дамжуулалт"
-          description="Онцгой байдлыг live дамжуулах."
+          title="Газрын зураг үзэх"
+          description="Хотын газрын зураг дээр чөлөөт болон завгүй зогсоолуудыг харуулах."
           darkMode={darkMode}
         />
         <FeatureCard
           icon={icons[2]}
-          title="Газрын зураг тэмдэглэгээ"
-          description="Аюултай газрыг газрын зураг дээр тэмдэглэх."
+          title="Зогсоол тэмдэглэх"
+          description="Өөрийн байршлыг тэмдэглэж, хадгалах боломж."
           darkMode={darkMode}
         />
         <FeatureCard
           icon={icons[3]}
-          title="Хуурамч мэдээлэл шалгах"
-          description="Fact-check хийж баталгаажуулах."
+          title="Хэрэглэгчийн хяналт"
+          description="Зогсоолын статистик, хэрэглэгчийн тайлан харуулах."
           darkMode={darkMode}
         />
       </div>
 
-      <h2 style={styles.sectionTitle}>Зурагнууд</h2>
+      <h2 style={styles.sectionTitle}>Жишээ зогсоолууд</h2>
       <div style={styles.imageGrid}>
         {demoImages.map((image, index) => (
           <div key={index} style={styles.demoItem}>
@@ -78,7 +79,10 @@ const LandingPageExtras = ({ darkMode }) => {
       </div>
 
       <footer style={{ ...styles.footer, color: theme.color }}>
-        © 2025 Манай Баг | 📧 <a href="mailto:info@project.mn" style={{ color: theme.color }}>info@project.mn</a>
+        © 2025 Ухаалаг Зогсоолын Систем | 📧{" "}
+        <a href="mailto:info@parkingsystem.mn" style={{ color: theme.color }}>
+          info@parkingsystem.mn
+        </a>
       </footer>
     </div>
   );

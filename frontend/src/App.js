@@ -5,18 +5,20 @@ import Login from "./components/Login";
 import Upload from "./components/Upload";
 import LandingPage from "./components/LandingPage";
 import MapView from "./components/MapView";
+import DetectionResult from "./components/DetectionResult";
 
 import "./App.css";
 import "leaflet/dist/leaflet.css";
 
 import axios from "axios";
-import DetectionResult from "./components/DetectionResult";
 axios.defaults.withCredentials = true;
 const API_URL = "http://localhost:4000";
 
 function App() {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   const PrivateRoute = ({ children }) => {
     if (loading) return <div>Loading...</div>;
@@ -39,15 +41,10 @@ function App() {
     }
   };
 
-  const location = useLocation();
-  const currentPath = location.pathname;
-
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const res = await axios.get(`${API_URL}/me`, {
-          withCredentials: true,
-        });
+        const res = await axios.get(`${API_URL}/me`, { withCredentials: true });
         if (res.data.userId) {
           setToken("valid");
         }
@@ -61,19 +58,24 @@ function App() {
   }, []);
 
   return (
-    <div>
+    <div style={styles.fadeIn}>
       <nav style={styles.nav}>
-        <h3 style={styles.title}>Citizen</h3>
-        <div>
+        <div style={styles.logo}>Finding Park Slot</div>
+        <div style={styles.linksContainer}>
           {token ? (
             <>
               <Link to="/upload" style={styles.link}>
-                Файл оруулах
+                Upload
               </Link>
               <Link to="/" style={styles.link}>
                 Home
               </Link>
-              <button onClick={logout} style={styles.button}>
+              <button
+                onClick={logout}
+                style={styles.contactButton}
+                onMouseEnter={(e) => (e.target.style.backgroundColor = "#1abc9c")}
+                onMouseLeave={(e) => (e.target.style.backgroundColor = "#16a085")}
+              >
                 Гарах
               </button>
             </>
@@ -86,7 +88,7 @@ function App() {
               )}
               {currentPath !== "/signup" && (
                 <Link to="/signup" style={styles.link}>
-                  Бүртгүүлэх
+                  Бүртгүүлэх 
                 </Link>
               )}
             </>
@@ -139,31 +141,44 @@ function App() {
 }
 
 const styles = {
+  fadeIn: {
+    animation: "fadeIn 1s",
+  },
   nav: {
     display: "flex",
     justifyContent: "space-between",
-    padding: "1rem 3rem",
-    background: "#393E46",
-    color: "white",
+    alignItems: "center",
+    padding: "10px 40px",
+    backgroundColor: "#2c3e50",
+    color: "#ecf0f1",
+    boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+  },
+  logo: {
+    fontSize: "20px",
+    fontWeight: "700",
+    letterSpacing: "1px",
+  },
+  linksContainer: {
+    display: "flex",
     alignItems: "center",
   },
-  title: {
-    margin: 0,
-  },
   link: {
-    color: "white",
-    marginRight: "1rem",
+    color: "#ecf0f1",
+    marginRight: "20px",
     textDecoration: "none",
-    fontWeight: "bold",
-    paddingRight: "20px",
+    fontWeight: "500",
+    transition: "color 0.3s",
   },
-  button: {
-    background: "white",
-    color: "#393E46",
+  contactButton: {
+    backgroundColor: "#16a085",
+    color: "#fff",
     border: "none",
-    padding: "0.5rem 1rem",
+    padding: "8px 16px",
+    borderRadius: "20px",
     cursor: "pointer",
-    borderRadius: "4px",
+    fontWeight: "500",
+    transition: "background-color 0.3s",
+    marginLeft: "10px",
   },
 };
 

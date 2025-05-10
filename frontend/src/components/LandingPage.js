@@ -9,49 +9,63 @@ function LandingPage() {
 
   return (
     <div style={{ ...styles.container, ...themeStyles.container }}>
-      {/* Dark Mode toggle товч */}
       <div style={{ textAlign: "right", marginBottom: "1rem" }}>
         <button
-            onClick={toggleMode}
-            style={{
+          onClick={toggleMode}
+          style={{
             ...styles.toggleButton,
-            color: darkMode ? "#fff" : "#333", // Dark mode → цагаан, Light mode → хар
+            color: darkMode ? "#fff" : "#333",
             borderColor: darkMode ? "#ccc" : "#555",
-            }}  
+          }}
         >
-            {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
+          {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
         </button>
-</div>
-      {/* Үндсэн контент */}
+      </div>
+
       <div style={styles.topSection}>
         <div style={styles.textContainer}>
           <h1 style={{ ...styles.title, ...themeStyles.title }}>
-            Хүмүүс нэг нэгнээ хамгаалдаг орон зай.
+            Ухаалаг зогсоолын систем
           </h1>
           <p style={{ ...styles.description, ...themeStyles.description }}>
-            Аюулгүй, амар тайван амьдрахад зориулагдсан платформ. Энэхүү систем нь таныг болон танай гэр бүл, найз нөхөд,
-            оршин буй газрынхаа аюулгүй байдлыг хангахад туслах сүлжээ юм. Газрын зураг дээр өөрийн байршлаа харах,
-            бодит цагийн мэдээлэл авах боломжтой.
+            Таны жолоодлогын туршлагыг хялбарчилж, зогсоол олох асуудлыг мартах цаг ирлээ.
+            Манай ухаалаг зогсоолын платформ нь бодит цагийн мэдээлэл, газрын зураг дээрх
+            чөлөөт зогсоолыг харуулах боломжийг олгож, таны цагийг хэмнэнэ.
           </p>
         </div>
         <div style={styles.imageContainer}>
           <img
-            src="/banner.jpg"
-            alt="Safety example"
+            src="/parking-banner.jpg"
+            alt="Smart Parking System"
             style={styles.image}
           />
         </div>
       </div>
 
-      {/* Доод хэсэг - Газрын зураг */}
       <div style={styles.mapSection}>
-        <h2 style={{ ...styles.mapTitle, ...themeStyles.mapTitle }}>Таны байршил</h2>
-        <MapView />
+        <h2 style={{ ...styles.mapTitle, ...themeStyles.mapTitle }}>
+          Чөлөөт зогсоолуудын газрын зураг
+        </h2>
+        <MapView
+          userFiles={[
+            {
+              _id: "1",
+              filename: "Demo Parking 1",
+              uploadedAt: new Date(),
+              location: { lat: 47.9186, lng: 106.9176 },
+            },
+            {
+              _id: "2",
+              filename: "Demo Parking 2",
+              uploadedAt: new Date(),
+              location: { lat: 47.9200, lng: 106.9200 },
+            },
+          ]}
+          darkMode={darkMode}
+        />
       </div>
 
-      {/* ✨ Нэмэлт онцлох боломжууд, мессеж, footer */}
       <LandingPageExtras darkMode={darkMode} />
-
     </div>
   );
 }
@@ -109,7 +123,6 @@ const styles = {
     fontWeight: "bold",
     transition: "color 0.3s, border-color 0.3s",
   },
-  
   light: {
     container: { background: "#f9fafc", color: "#333" },
     title: { color: "#2c3e50" },
@@ -122,7 +135,6 @@ const styles = {
     description: { color: "#ccc" },
     mapTitle: { color: "#f0f0f0" },
   },
-  
 };
 
 export default LandingPage;
