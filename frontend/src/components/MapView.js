@@ -14,6 +14,7 @@ const demoParkings = [
   { id: 2, lat: 47.9200, lng: 106.9200, status: "closed", count: 0 },
   { id: 3, lat: 47.9150, lng: 106.9150, status: "full", count: 0 },
   { id: 4, lat: 47.9220, lng: 106.9180, status: "free", count: 228 },
+  { id: 5, lat: 47.923493, lng: 106.930035, status: "free", count: 0 },
 ];
 
 delete L.Icon.Default.prototype._getIconUrl;
