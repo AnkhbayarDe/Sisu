@@ -103,11 +103,12 @@ const MapView = () => {
         Ойрхон сул зогсоол руу
       </button>
 
-      <MapContainer center={position} zoom={15} style={{ height: "500px", width: "100%" }}>
+      <MapContainer center={position} zoom={15} style={{ height: "1000px", width: "200%" }}>
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://carto.com/">CartoDB</a>'
+          url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+          attribution='Map data: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> contributors'
         />
+
 
         <Circle
           center={position}

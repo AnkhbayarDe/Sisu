@@ -6,6 +6,7 @@ import Upload from "./components/Upload";
 import LandingPage from "./components/LandingPage";
 import MapView from "./components/MapView";
 import DetectionResult from "./components/DetectionResult";
+import AdminPage from "./components/AdminManager"; // Import AdminPage
 
 import "./App.css";
 import "leaflet/dist/leaflet.css";
@@ -70,6 +71,9 @@ function App() {
               <Link to="/" style={styles.link}>
                 Home
               </Link>
+              <Link to="/admin" style={styles.link}>
+                Admin
+              </Link>
               <button
                 onClick={logout}
                 style={styles.contactButton}
@@ -128,6 +132,14 @@ function App() {
           element={
             <PrivateRoute>
               <DetectionResult token={token} />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <PrivateRoute>
+              <AdminPage />
             </PrivateRoute>
           }
         />
